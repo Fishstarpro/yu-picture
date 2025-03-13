@@ -6,15 +6,15 @@
 
 <script setup lang="ts">
 import BasicLayout from '@/layouts/BasicLayout.vue'
-import { healthUsingGet } from '@/api/mainController.ts'
 import {useLoginUserStore} from "@/stores/useLoginUserStore.ts";
 
-const loginUserStore = useLoginUserStore()
-loginUserStore.fetchLoginUser()
+//刷新页面时重新获取登录用户信息
+// const loginUserStore = useLoginUserStore()
+// loginUserStore.fetchLoginUser()
 
-healthUsingGet().then((res) => {
-  console.log(res)
-})
+//改为在权限校验文件中获取
+
+
 </script>
 
 <style scoped></style>
