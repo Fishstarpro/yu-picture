@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -105,7 +106,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
      * @param userAccount  用户账户
      * @param userPassword 用户密码
      * @param request
-     * @return 脱敏后的用户信息
+     * @return 脱敏后的登录用户信息
      */
     @Override
     public LoginUserVO userLogin(String userAccount, String userPassword, HttpServletRequest request) {
@@ -137,10 +138,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     /**
-     * 获得脱敏后的用户信息
+     * 获得脱敏后的登录用户信息
      *
      * @param user 用户
-     * @return 脱敏后的用户信息
+     * @return 脱敏后的登录用户信息
      */
     @Override
     public LoginUserVO getLoginUesrVO(User user) {
@@ -189,7 +190,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     /**
-     * 获取当前登录用户
+     * 获取当前登录用户信息
      *
      * @param request
      * @return
@@ -271,6 +272,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         queryWrapper.orderBy(StrUtil.isNotBlank(sortField), sortOrder.equals("ascend"), sortField);
 
         return queryWrapper;
+    }
+
+    /**
+     * 是否为管理员
+     * @param user
+     * @return
+     */
+    @Override
+    public boolean isAdmin(User user) {
+        return user != null && UserConstant.ADMIN_ROLE.equals(user.getUserRole());
     }
 
 
