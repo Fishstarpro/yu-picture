@@ -59,7 +59,7 @@ const handleSubmit = async (values: any) => {
     message.success('注册成功')
     // 跳转到首页
     router.push({
-      path: '/',
+      path: `/`,
       replace: true,
     })
   } else {

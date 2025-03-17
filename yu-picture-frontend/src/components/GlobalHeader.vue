@@ -62,15 +62,26 @@ const originItems = ref<MenuProps['items']>([
     title: '主页',
   },
   {
+    key: '/add_picture',
+    label: '创建图片',
+    title: '创建图片',
+  },
+  {
     key: '/admin/userManage',
     label: '用户管理',
     title: 'UserManagePage',
+  },
+  {
+    key: '/admin/pictureManage',
+    label: '图片管理',
+    title: 'PictureManagePage',
   },
   {
     key: 'others',
     label: h('a', { href: 'http://gptapi.us', target: '_blank' }, 'chatgpt'),
     title: 'chatgpt',
   },
+
 ])
 
 const router = useRouter()
