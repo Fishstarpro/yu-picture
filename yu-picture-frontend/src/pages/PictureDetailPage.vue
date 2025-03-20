@@ -1,18 +1,20 @@
 <template>
   <div id="pictureDetailPage">
-    <a-row :gutter="[24, 24]">
+    <a-row :gutter="[16, 16]">
       <!-- 图片预览 -->
-      <a-col :sm="24" :md="16" :xl="18">
-        <a-card title="图片预览" class="preview-card">
-          <a-image
-            :src="picture.url"
-            style="max-height: 650px; object-fit: contain; border-radius: 8px;"
-          />
+      <a-col :sm="24" :md="15" :xl="17">
+        <a-card title="图片预览" class="preview-card" :bodyStyle="{ padding: '12px', textAlign: 'center' }">
+          <div class="image-wrapper">
+            <a-image
+              :src="picture.url"
+              :preview="{ maskClassName: 'preview-mask' }"
+            />
+          </div>
         </a-card>
       </a-col>
       <!-- 图片信息区域 -->
-      <a-col :sm="24" :md="8" :xl="6">
-        <a-card title="图片信息" class="info-card">
+      <a-col :sm="24" :md="9" :xl="7">
+        <a-card title="图片信息" class="info-card" :bodyStyle="{ padding: '8px 12px' }">
           <a-descriptions :column="1" class="info-descriptions">
             <a-descriptions-item label="作者">
               <a-space>
@@ -43,7 +45,6 @@
           <a-space wrap>
 
             <!-- 图片操作 -->
-            <div class="action-group">
               <a-button
                 type="primary"
                 @click="doDownload"
@@ -72,7 +73,6 @@
               >
                 删除
               </a-button>
-            </div>
           </a-space>
         </a-card>
       </a-col>
@@ -163,47 +163,72 @@ const doDelete = async () => {
 </script>
 
 <style scoped>
-.pictureDetailPage {
-  padding: 24px;
+#pictureDetailPage {
+  padding: 16px;
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
 .preview-card {
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  height: 100%;
+}
+
+.image-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  max-height: 650px;
+  overflow: hidden;
+}
+
+.image-wrapper :deep(.ant-image) {
+  max-height: 650px;
+  width: 100%;
+}
+
+.image-wrapper :deep(.ant-image-img) {
+  object-fit: contain;
+  max-height: 650px;
+  border-radius: 4px;
 }
 
 .info-card {
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-  background: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  height: 100%;
 }
 
 .info-descriptions {
-  padding: 16px;
+  padding: 8px 0;
 }
 
-.info-descriptions .ant-descriptions-item-label {
+.info-descriptions :deep(.ant-descriptions-item) {
+  padding-bottom: 8px;
+}
+
+.info-descriptions :deep(.ant-descriptions-item-label) {
   color: #666;
   font-weight: 500;
+  width: 70px;
 }
 
 .tag-item {
   background: #ebf7ff;
   color: #1890ff;
-  font-size: 14px;
-}
-
-.action-group {
-  margin-top: 16px;
-  display: flex;
-  gap: 12px;
+  font-size: 12px;
+  margin: 2px;
 }
 
 .action-btn {
   min-width: 80px;
   height: 36px;
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 14px;
+  margin-top: 8px;
 }
 
 .action-btn.ant-btn-primary {

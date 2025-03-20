@@ -38,13 +38,25 @@
       <template #renderItem="{ item: picture }">
         <a-list-item>
           <!-- 单张图片 -->
-          <a-card hoverable @click="doClickPicture(picture)">
+          <a-card hoverable @click="doClickPicture(picture)" class="fade-in-card">
             <template #cover>
-              <img
-                :alt="picture.name"
-                :src="picture.url"
-                style="height: 180px; object-fit: cover"
-              />
+              <div class="image-container">
+                <img
+                  :alt="picture.name"
+                  :src="picture.url"
+                  style="height: 180px; width: 100%; object-fit: cover"
+                />
+                <div class="author-info">
+                  <span>{{ picture.user?.userName || '未知作者' }}</span>
+                </div>
+                <!-- 悬停效果覆盖层 -->
+                <div class="hover-overlay">
+                  <div class="detail-button">
+                    <EyeOutlined />
+                    <span>查看详情</span>
+                  </div>
+                </div>
+              </div>
             </template>
             <a-card-meta :title="picture.name">
               <template #description>
@@ -69,6 +81,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { message } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
+import { EyeOutlined } from '@ant-design/icons-vue'
 import {
   listPictureTagCategoryUsingGet,
   listPictureVoByPageUsingPost,
@@ -188,5 +201,92 @@ onMounted(() => {
 
 #homePage .tag-bar {
   margin-bottom: 16px;
+  text-align: center;
 }
+
+/* 添加tabs居中样式 */
+#homePage :deep(.ant-tabs) .ant-tabs-nav {
+  display: flex;
+  justify-content: center;
+}
+
+#homePage :deep(.ant-tabs-nav-wrap) {
+  justify-content: center;
+}
+.image-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.author-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-top-right-radius: 4px;
+}
+
+/* 悬停效果样式 */
+.hover-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.image-container:hover .hover-overlay {
+  opacity: 1;
+}
+
+.detail-button {
+  color: white;
+  background-color: rgba(24, 144, 255, 0.8);
+  padding: 8px 16px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.detail-button:hover {
+  background-color: rgba(24, 144, 255, 1);
+}
+
+.fade-in-card {
+  animation: fadeIn 0.8s ease-in-out;
+  opacity: 0;
+  animation-fill-mode: forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 为每个卡片添加延迟，创造错落有致的效果 */
+.fade-in-card:nth-child(1) { animation-delay: 0.1s; }
+.fade-in-card:nth-child(2) { animation-delay: 0.2s; }
+.fade-in-card:nth-child(3) { animation-delay: 0.3s; }
+.fade-in-card:nth-child(4) { animation-delay: 0.4s; }
+.fade-in-card:nth-child(5) { animation-delay: 0.5s; }
+.fade-in-card:nth-child(6) { animation-delay: 0.6s; }
 </style>

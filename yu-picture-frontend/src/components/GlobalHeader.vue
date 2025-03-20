@@ -10,12 +10,7 @@
         </router-link>
       </a-col>
       <a-col flex="auto">
-        <a-menu
-          v-model:selectedKeys="current"
-          mode="horizontal"
-          :items="items"
-          @click="doMenuClick"
-        />
+        <a-menu v-model:selectedKeys="current" mode="horizontal" :items="items" @click="doMenuClick" />
       </a-col>
       <a-col flex="120px">
         <div class="user-login-status">
