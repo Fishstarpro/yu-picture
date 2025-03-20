@@ -13,7 +13,7 @@ import com.yxc.yupicturebackend.exception.ErrorCode;
 import com.yxc.yupicturebackend.exception.ThrowUtils;
 import com.yxc.yupicturebackend.model.dto.user.UserQueryRequest;
 import com.yxc.yupicturebackend.model.entity.User;
-import com.yxc.yupicturebackend.model.entity.enums.UserRoleEnum;
+import com.yxc.yupicturebackend.model.enums.UserRoleEnum;
 import com.yxc.yupicturebackend.model.vo.LoginUserVO;
 import com.yxc.yupicturebackend.model.vo.UserVO;
 import com.yxc.yupicturebackend.service.UserService;
@@ -24,9 +24,7 @@ import org.springframework.util.DigestUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**

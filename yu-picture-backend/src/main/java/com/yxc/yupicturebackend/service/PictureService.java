@@ -3,6 +3,8 @@ package com.yxc.yupicturebackend.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yxc.yupicturebackend.model.dto.picture.PictureQueryRequest;
+import com.yxc.yupicturebackend.model.dto.picture.PictureReviewRequest;
+import com.yxc.yupicturebackend.model.dto.picture.PictureUploadByBatchRequest;
 import com.yxc.yupicturebackend.model.dto.picture.PictureUploadRequest;
 import com.yxc.yupicturebackend.model.entity.Picture;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -21,12 +23,12 @@ public interface PictureService extends IService<Picture> {
 
     /**
      * 上传图片
-     * @param file
+     * @param inputSource
      * @param pictureUploadRequest
      * @param loginUser
      * @return
      */
-    PictureVO uploadPicture(MultipartFile file, PictureUploadRequest pictureUploadRequest, User loginUser);
+    PictureVO uploadPicture(Object inputSource, PictureUploadRequest pictureUploadRequest, User loginUser);
 
     /**
      * 校验图片
@@ -56,4 +58,26 @@ public interface PictureService extends IService<Picture> {
      * @return
      */
     QueryWrapper<Picture> getQueryWrapper(PictureQueryRequest pictureQueryRequest);
+
+    /**
+     * 填充审核参数
+     * @param picture
+     * @param loginUser
+     */
+    void fillReviewParams(Picture picture, User loginUser);
+
+    /**
+     * 图片审核
+     * @param pictureReviewRequest
+     * @param loginUser
+     */
+    void doPictureReview(PictureReviewRequest pictureReviewRequest, User loginUser);
+
+    /**
+     * 图片批量抓取和上传图片
+     * @param pictureUploadByBatchRequest
+     * @param loginUser
+     * @return
+     */
+    Integer uploadPictureByBatch(PictureUploadByBatchRequest pictureUploadByBatchRequest, User loginUser);
 }

@@ -1,4 +1,4 @@
-package com.yxc.yupicturebackend.model.entity.enums;
+package com.yxc.yupicturebackend.model.enums;
 
 import cn.hutool.core.util.ObjUtil;
 import lombok.Getter;
@@ -14,26 +14,31 @@ import java.util.HashMap;
  * @Create 2025/3/11 0:26
  * @Version 1.0
  */
-@Getter
-public enum UserRoleEnum {
 
-    USER("用户", "user"),
-    ADMIN("管理员", "admin");
+/**
+ * 图片审核状态枚举
+ */
+@Getter
+public enum PictureReviewStatusEnum {
+
+    REVIEWING("待审核", 0),
+    PASS("通过", 1),
+    REJECT("拒绝", 2);
 
     private final String text;
 
-    private final String value;
+    private final int value;
 
-    private static HashMap<String, UserRoleEnum> map = new HashMap<>();
+    private static HashMap<Integer, PictureReviewStatusEnum> map = new HashMap<>();
 
     //类加载时将对象放入map中
     static {
-        for (UserRoleEnum userRoleEnum : UserRoleEnum.values()) {
+        for (PictureReviewStatusEnum userRoleEnum : PictureReviewStatusEnum.values()) {
             map.put(userRoleEnum.getValue(), userRoleEnum);
         }
     }
 
-    UserRoleEnum(String text, String value) {
+    PictureReviewStatusEnum(String text, int value) {
         this.text = text;
 
         this.value = value;
@@ -45,7 +50,7 @@ public enum UserRoleEnum {
      * @param value
      * @return
      */
-    public static UserRoleEnum getEnumByValue(String value) {
+    public static PictureReviewStatusEnum getEnumByValue(Integer value) {
         if (ObjUtil.isEmpty(value)) {
             return null;
         }

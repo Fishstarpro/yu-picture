@@ -12,7 +12,6 @@ import com.yxc.yupicturebackend.exception.ErrorCode;
 import com.yxc.yupicturebackend.exception.ThrowUtils;
 import com.yxc.yupicturebackend.model.dto.user.*;
 import com.yxc.yupicturebackend.model.entity.User;
-import com.yxc.yupicturebackend.model.entity.enums.UserRoleEnum;
 import com.yxc.yupicturebackend.model.vo.LoginUserVO;
 import com.yxc.yupicturebackend.model.vo.UserVO;
 import com.yxc.yupicturebackend.service.UserService;

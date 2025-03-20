@@ -4,7 +4,7 @@ import com.yxc.yupicturebackend.annotation.AuthCheck;
 import com.yxc.yupicturebackend.exception.BusinessException;
 import com.yxc.yupicturebackend.exception.ErrorCode;
 import com.yxc.yupicturebackend.model.entity.User;
-import com.yxc.yupicturebackend.model.entity.enums.UserRoleEnum;
+import com.yxc.yupicturebackend.model.enums.UserRoleEnum;
 import com.yxc.yupicturebackend.service.UserService;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;

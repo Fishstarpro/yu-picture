@@ -25,14 +25,9 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * ClassName: FileManager
- * Package: com.yxc.yupicturebackend.manager
- * Description:
- *
- * @Author fishstar
- * @Create 2025/3/15 15:43
- * @Version 1.0
+ * @deprecated 已废弃，改为使用 upload 包的模板方法优化
  */
+@Deprecated
 @Component
 @Slf4j
 public class FileManager {
