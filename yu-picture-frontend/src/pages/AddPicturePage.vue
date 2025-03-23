@@ -16,7 +16,7 @@
     
     <!-- 修改图片时显示当前图片预览 -->
     <div v-if="route.query?.id && picture?.url" class="preview-container" style="margin-bottom: 16px">
-      <img :src="picture.url" alt="当前图片" />
+      <img v-lazy="picture.url" alt="当前图片" />
     </div>
     
     <!-- 图片信息表单 -->

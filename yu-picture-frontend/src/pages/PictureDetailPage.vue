@@ -8,6 +8,7 @@
             <a-image
               :src="picture.url"
               :preview="{ maskClassName: 'preview-mask' }"
+              :lazy="true"
             />
           </div>
         </a-card>

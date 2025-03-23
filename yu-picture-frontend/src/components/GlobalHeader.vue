@@ -71,11 +71,6 @@ const originItems = ref<MenuProps['items']>([
     label: '图片管理',
     title: 'PictureManagePage',
   },
-  {
-    key: 'others',
-    label: h('a', { href: 'http://gptapi.us', target: '_blank' }, 'chatgpt'),
-    title: 'chatgpt',
-  },
 
 ])
 

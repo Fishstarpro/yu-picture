@@ -9,7 +9,7 @@
       />
     </div>
     <div v-if="picture?.url" class="preview-container">
-      <img :src="picture.url" alt="preview" />
+      <img v-lazy="picture.url" alt="preview" />
     </div>
     <div v-else class="empty-container">
       <picture-outlined />
