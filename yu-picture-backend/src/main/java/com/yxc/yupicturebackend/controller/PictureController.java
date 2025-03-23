@@ -247,6 +247,24 @@ public class PictureController {
         return ResultUtils.success(pictureService.getPictureVOPage(picturePage, request));
     }
 
+    /**
+     * 分页获取图片列表（封装类）
+     */
+    @PostMapping("/list/page/vo/cache")
+    public BaseResponse<Page<PictureVO>> listPictureVOByPageWithCache(@RequestBody PictureQueryRequest pictureQueryRequest,
+                                                             HttpServletRequest request) {
+        long current = pictureQueryRequest.getCurrent();
+        long size = pictureQueryRequest.getPageSize();
+        //1.限制爬虫
+        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+        //2.普通用户只能看到已审核的图片
+        pictureQueryRequest.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
+        //3.从缓存中获取数据
+        Page<PictureVO> pictureVOPage = pictureService.getPictureVOPageWithCache(pictureQueryRequest, request, current, size);
+        //返回结果
+        return ResultUtils.success(pictureVOPage);
+    }
+
 
     /**
      * 获取标签和分类列表

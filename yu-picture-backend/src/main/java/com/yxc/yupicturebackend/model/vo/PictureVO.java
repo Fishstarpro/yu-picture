@@ -21,6 +21,11 @@ import java.util.List;
       * 图片 url
       */
      private String url;
+
+     /**
+      * 缩略图 url
+      */
+     private String thumbnailUrl;
  
      /**
       * 图片名称

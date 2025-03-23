@@ -3,15 +3,18 @@ package com.yxc.yupicturebackend.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjUtil;
-import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.yxc.yupicturebackend.exception.BusinessException;
 import com.yxc.yupicturebackend.exception.ErrorCode;
 import com.yxc.yupicturebackend.exception.ThrowUtils;
-import com.yxc.yupicturebackend.manager.FileManager;
+import com.yxc.yupicturebackend.manager.CosManager;
 import com.yxc.yupicturebackend.manager.upload.FilePictureUpload;
 import com.yxc.yupicturebackend.manager.upload.PictureUploadTemplate;
 import com.yxc.yupicturebackend.manager.upload.UrlPictureUpload;
@@ -33,15 +36,18 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.time.Duration;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -49,8 +55,8 @@ import java.util.stream.Collectors;
 * @description 针对表【picture(图片)】的数据库操作Service实现
 * @createDate 2025-03-15 15:42:15
 */
-@Slf4j
 @Service
+@Slf4j
 public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
     implements PictureService{
 
@@ -60,9 +66,24 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
 
     @Resource
     private FilePictureUpload filePictureUpload;
-
+    
     @Resource
     private UrlPictureUpload urlPictureUpload;
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
+    /**
+     * 本地缓存
+     */
+    private final Cache<String, String> LOCAL_CACHE = Caffeine.newBuilder()
+            .initialCapacity(1024)
+            .maximumSize(10_000L) // 最大 10000 条
+            // 缓存 5 分钟后移除
+            .expireAfterWrite(Duration.ofMinutes(5))
+            .build();
+    @Autowired
+    private CosManager cosManager;
 
     /**
      * 上传图片
@@ -89,6 +110,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         Picture picture = new Picture();
 
         picture.setUrl(uploadPictureResult.getUrl());
+
+        picture.setThumbnailUrl(uploadPictureResult.getThumbnailUrl());
         // 支持外层传递图片名称
         String picName = uploadPictureResult.getPicName();
 
@@ -105,11 +128,12 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         picture.setUserId(loginUser.getId());
         //补充审核参数
         fillReviewParams(picture, loginUser);
-        //5.判断是新增还是更新
-        //**更新
+        //5.判断是否是更新
         if (pictureUploadRequest.getId() != null) {
             //获取老图
             Picture oldPicture = this.getById(pictureUploadRequest.getId());
+            //删除旧图
+            this.clearPictureFile(oldPicture);
 
             ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR, "图片不存在");
             //如果不是本人或者不是管理员不能修改
@@ -120,6 +144,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
             picture.setId(pictureUploadRequest.getId());
 
             picture.setEditTime(new Date());
+
         }
 
         boolean result = this.saveOrUpdate(picture);
@@ -418,6 +443,88 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         }
 
         return uploadCount;
+    }
+
+    /**
+     * 从缓存中获取图片分页
+     *
+     * @param pictureQueryRequest
+     * @param current
+     * @param size
+     * @return
+     */
+    @Override
+    public Page<PictureVO> getPictureVOPageWithCache(PictureQueryRequest pictureQueryRequest, HttpServletRequest request, long current, long size) {
+        //1.先从本地缓存查找
+        String queryCondition = JSONUtil.toJsonStr(pictureQueryRequest);
+
+        String hashKey = DigestUtils.md5DigestAsHex(queryCondition.getBytes());
+
+        String cacheKey = String.format("yupicture:listPictureVOByPage:%s", hashKey);
+
+        String cacheValue = LOCAL_CACHE.getIfPresent(cacheKey);
+
+        if (cacheValue != null) {
+            Page<PictureVO> cachePage = JSONUtil.toBean(cacheValue, Page.class);
+
+            return cachePage;
+        }
+        //2.如果没有命中，则从redis中查询,并将数据写入本地缓存
+        ValueOperations<String, String> opsForValue = stringRedisTemplate.opsForValue();
+
+        cacheValue = opsForValue.get(cacheKey);
+
+        if (cacheValue != null) {
+            Page<PictureVO> cachePage = JSONUtil.toBean(cacheValue, Page.class);
+
+            LOCAL_CACHE.put(cacheKey, cacheValue);
+
+            return cachePage;
+        }
+        //3.如果没有命中，则从数据库中查询，并将数据写入redis和本地缓存
+        //查询数据库
+        Page<Picture> picturePage = this.page(new Page<>(current, size),
+                this.getQueryWrapper(pictureQueryRequest));
+
+        Page<PictureVO> pictureVOPage = this.getPictureVOPage(picturePage, request);
+        //设置过期时间,5~10分钟过期,防止缓存雪崩
+        long expireTime = 300 + new Random().nextInt(300);
+
+        cacheValue = JSONUtil.toJsonStr(pictureVOPage);
+
+        opsForValue.set(cacheKey, cacheValue, expireTime, TimeUnit.SECONDS);
+
+        //写入本地缓存
+        LOCAL_CACHE.put(cacheKey, cacheValue);
+
+        return pictureVOPage;
+    }
+
+    /**
+     * 清理图片文件
+     * @param oldPicture
+     */
+    @Override
+    public void clearPictureFile(Picture oldPicture) {
+        //1.判断图片是否被多条记录使用
+        String url = oldPicture.getUrl();
+
+        LambdaQueryWrapper<Picture> queryWrapper = new LambdaQueryWrapper<>();
+
+        queryWrapper.eq(Picture::getUrl, url);
+
+        if (this.count(queryWrapper) > 1) {
+            //如果有多条记录使用，则不删除
+            return;
+        }
+        //2.删除图片
+        cosManager.deleteObject(url);
+        //3.删除缩略图
+        if (StrUtil.isNotBlank(oldPicture.getThumbnailUrl())) {
+            String thumbnailUrl = oldPicture.getThumbnailUrl();
+
+            cosManager.deleteObject(thumbnailUrl);
+        }
     }
 }
 

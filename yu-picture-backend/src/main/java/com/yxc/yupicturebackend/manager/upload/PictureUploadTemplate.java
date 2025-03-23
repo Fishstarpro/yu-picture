@@ -1,10 +1,12 @@
 package com.yxc.yupicturebackend.manager.upload;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.qcloud.cos.model.PutObjectResult;
+import com.qcloud.cos.model.ciModel.persistence.CIObject;
 import com.qcloud.cos.model.ciModel.persistence.ImageInfo;
 import com.yxc.yupicturebackend.config.CosClientConfig;
 import com.yxc.yupicturebackend.exception.BusinessException;
@@ -18,6 +20,7 @@ import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 
 /**
  * ClassName: FileManager
@@ -56,7 +59,7 @@ public abstract class PictureUploadTemplate {
         String uploadFilename = String.format("%s_%s.%s", DateUtil.formatDate(new Date()), uuid, FileUtil.getSuffix(originalFilename));
         String uploadPath = String.format("/%s/%s", prefix, uploadFilename);
         //3.上传图片
-        // 创建临时文件
+        //创建临时文件
         File file = null;
 
         try {
@@ -66,7 +69,20 @@ public abstract class PictureUploadTemplate {
             setFileContent(inputSource, file);
             //上传文件到对象存储
             PutObjectResult putObjectResult = cosManager.putPictureObject(uploadPath, file);
+            //获取压缩后的文件
+            List<CIObject> ciObjectList = putObjectResult.getCiUploadResult().getProcessResults().getObjectList();
 
+            if (CollUtil.isNotEmpty(ciObjectList)) {
+                CIObject compressedCiObject = ciObjectList.get(0);
+
+                CIObject thumbnailCiObject = compressedCiObject;
+
+                if (ciObjectList.size() > 1) {
+                    thumbnailCiObject = ciObjectList.get(1);
+                }
+                //封装图片返回信息
+                return getUploadPictureResult(originalFilename, compressedCiObject, thumbnailCiObject);
+            }
             ImageInfo imageInfo = putObjectResult.getCiUploadResult().getOriginalInfo().getImageInfo();
             //封装图片返回信息
             return getUploadPictureResult(imageInfo, originalFilename, file, uploadPath);
@@ -79,6 +95,7 @@ public abstract class PictureUploadTemplate {
             this.deleteTempFile(file);
         }
     }
+
 
 
     /**
@@ -119,11 +136,6 @@ public abstract class PictureUploadTemplate {
         String format = imageInfo.getFormat();
         int width = imageInfo.getWidth();
         int height = imageInfo.getHeight();
-        int quality = imageInfo.getQuality();
-        String ave = imageInfo.getAve();
-        int orientation = imageInfo.getOrientation();
-        int frameCount = imageInfo.getFrameCount();
-
         double picScale = NumberUtil.round(width * 1.0 / height, 2).doubleValue();
 
         UploadPictureResult uploadPictureResult = new UploadPictureResult();
@@ -139,6 +151,33 @@ public abstract class PictureUploadTemplate {
         return uploadPictureResult;
     }
 
+    /**
+     * 封装图片返回信息
+     *
+     * @param originalFilename
+     * @param compressedCiObject
+     * @param thumbnailCiObject
+     * @return
+     */
+    private UploadPictureResult getUploadPictureResult(String originalFilename, CIObject compressedCiObject, CIObject thumbnailCiObject) {
+        String format = compressedCiObject.getFormat();
+        int width = compressedCiObject.getWidth();
+        int height = compressedCiObject.getHeight();
+        double picScale = NumberUtil.round(width * 1.0 / height, 2).doubleValue();
+
+        UploadPictureResult uploadPictureResult = new UploadPictureResult();
+
+        uploadPictureResult.setUrl(cosClientConfig.getHost() + "/" +  compressedCiObject.getKey());
+        uploadPictureResult.setThumbnailUrl(cosClientConfig.getHost() + "/" + thumbnailCiObject.getKey());
+        uploadPictureResult.setPicName(FileUtil.mainName(originalFilename));
+        uploadPictureResult.setPicSize(compressedCiObject.getSize().longValue());
+        uploadPictureResult.setPicWidth(width);
+        uploadPictureResult.setPicHeight(height);
+        uploadPictureResult.setPicScale(picScale);
+        uploadPictureResult.setPicFormat(format);
+
+        return uploadPictureResult;
+    }
 
     /**
      * 删除临时文件
