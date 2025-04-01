@@ -2,12 +2,9 @@ package com.yxc.yupicturebackend.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.yxc.yupicturebackend.model.dto.picture.PictureQueryRequest;
-import com.yxc.yupicturebackend.model.dto.picture.PictureReviewRequest;
-import com.yxc.yupicturebackend.model.dto.picture.PictureUploadByBatchRequest;
-import com.yxc.yupicturebackend.model.dto.picture.PictureUploadRequest;
-import com.yxc.yupicturebackend.model.entity.Picture;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.yxc.yupicturebackend.model.dto.picture.*;
+import com.yxc.yupicturebackend.model.entity.Picture;
 import com.yxc.yupicturebackend.model.entity.User;
 import com.yxc.yupicturebackend.model.vo.PictureVO;
 
@@ -81,18 +78,32 @@ public interface PictureService extends IService<Picture> {
     Integer uploadPictureByBatch(PictureUploadByBatchRequest pictureUploadByBatchRequest, User loginUser);
 
     /**
-     * 从缓存中获取图片分页
-     * @param pictureQueryRequest
-     * @param request
-     * @param current
-     * @param size
-     * @return
-     */
-    Page<PictureVO> getPictureVOPageWithCache(PictureQueryRequest pictureQueryRequest, HttpServletRequest request, long current, long size);
-
-    /**
      * 清除图片文件
      * @param oldPicture
      */
     void clearPictureFile(Picture oldPicture);
+
+    /**
+     * 删除图片
+     *
+     * @param pictureId
+     * @param loginUser
+     */
+    void deletePicture(long pictureId, User loginUser);
+
+    /**
+     * 编辑图片
+     *
+     * @param pictureEditRequest
+     * @param loginUser
+     */
+    void editPicture(PictureEditRequest pictureEditRequest, User loginUser);
+
+    /**
+     * 校验空间图片的权限
+     *
+     * @param loginUser
+     * @param picture
+     */
+    void checkPictureAuth(User loginUser, Picture picture);
 }

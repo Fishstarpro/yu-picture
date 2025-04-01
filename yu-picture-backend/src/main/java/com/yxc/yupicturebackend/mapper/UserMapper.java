@@ -1,7 +1,7 @@
 package com.yxc.yupicturebackend.mapper;
 
-import com.yxc.yupicturebackend.model.entity.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.yxc.yupicturebackend.model.entity.User;
 
 /**
 * @author yxc63

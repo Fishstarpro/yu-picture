@@ -1,7 +1,6 @@
 package com.yxc.yupicturebackend.controller;
 
 import cn.hutool.core.io.IoUtil;
-import cn.hutool.core.util.ByteUtil;
 import com.qcloud.cos.model.COSObject;
 import com.qcloud.cos.model.COSObjectInputStream;
 import com.yxc.yupicturebackend.annotation.AuthCheck;

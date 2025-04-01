@@ -1,9 +1,9 @@
 package com.yxc.yupicturebackend.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.yxc.yupicturebackend.model.dto.user.UserQueryRequest;
 import com.yxc.yupicturebackend.model.entity.User;
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.yxc.yupicturebackend.model.vo.LoginUserVO;
 import com.yxc.yupicturebackend.model.vo.UserVO;
 
