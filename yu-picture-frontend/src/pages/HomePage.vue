@@ -29,50 +29,7 @@
       </a-space>
     </div>
     <!-- 图片列表 -->
-    <a-list
-      :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 6 }"
-      :data-source="dataList"
-      :loading="loading"
-    >
-      <template #renderItem="{ item: picture }">
-        <a-list-item>
-          <!-- 单张图片 -->
-          <a-card hoverable @click="doClickPicture(picture)" class="fade-in-card">
-            <template #cover>
-              <div class="image-container">
-                <img
-                  :alt="picture.name"
-                  v-lazy="picture.thumbnailUrl || picture.url"
-                  style="height: 180px; width: 100%; object-fit: cover"
-                />
-                <div class="author-info">
-                  <span>{{ picture.user?.userName || '未知作者' }}</span>
-                </div>
-                <!-- 悬停效果覆盖层 -->
-                <div class="hover-overlay">
-                  <div class="detail-button">
-                    <EyeOutlined />
-                    <span>查看详情</span>
-                  </div>
-                </div>
-              </div>
-            </template>
-            <a-card-meta :title="picture.name">
-              <template #description>
-                <a-flex>
-                  <a-tag color="green">
-                    {{ picture.category ?? '默认' }}
-                  </a-tag>
-                  <a-tag v-for="tag in picture.tags" :key="tag">
-                    {{ tag }}
-                  </a-tag>
-                </a-flex>
-              </template>
-            </a-card-meta>
-          </a-card>
-        </a-list-item>
-      </template>
-    </a-list>
+    <PIctureList :dataList="dataList" :loading="loading" :show-op="false" />
     <!-- 加载更多提示 -->
     <div v-if="dataList.length > 0" class="load-more-container" ref="loadMoreTriggerRef">
       <div v-if="loading" class="loading-indicator">
@@ -105,6 +62,7 @@ import {
   listPictureTagCategoryUsingGet,
   listPictureVoByPageUsingPost,
 } from '@/api/pictureController.ts'
+import PIctureList from '@/components/PIctureList.vue'
 
 const dataList = ref<API.PictureVO[]>([])
 const total = ref(0)
@@ -149,7 +107,7 @@ const fetchData = async () => {
     }
 
     total.value = res.data.data.total ?? 0
-    
+
     // 判断是否还有更多数据
     const currentPageRecords = res.data.data.records ?? [];
     hasMore.value = currentPageRecords.length === searchParams.pageSize && dataList.value.length < total.value;
@@ -175,12 +133,12 @@ const loadMore = () => {
 const handleScroll = () => {
   // 如果正在加载或没有更多数据，则不处理
   if (loading.value || !hasMore.value) return
-  
+
   // 获取滚动位置信息
   const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
   const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight
   const clientHeight = document.documentElement.clientHeight
-  
+
   // 当滚动到距离底部200px时，加载更多数据
   if (scrollTop + clientHeight >= scrollHeight - 200) {
     loadMore()
@@ -229,7 +187,7 @@ const loadMoreTriggerRef = ref<HTMLElement | null>(null)
 // 初始化IntersectionObserver
 const initIntersectionObserver = () => {
   if (loadMoreObserver.value) return
-  
+
   // 创建观察器实例
   loadMoreObserver.value = new IntersectionObserver((entries) => {
     // 如果底部元素进入视口，且不在加载中，且还有更多数据
@@ -244,7 +202,7 @@ const initIntersectionObserver = () => {
     // 设置阈值，当目标元素0%可见时触发回调
     threshold: 0
   })
-  
+
   // 如果底部触发元素存在，开始观察
   if (loadMoreTriggerRef.value) {
     loadMoreObserver.value.observe(loadMoreTriggerRef.value)
@@ -316,84 +274,6 @@ onUnmounted(() => {
     transform: translateY(-3px);
   }
 }
-.image-container {
-  position: relative;
-  overflow: hidden;
-}
-
-.author-info {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  padding: 4px 8px;
-  font-size: 12px;
-  border-top-right-radius: 4px;
-}
-
-/* 悬停效果样式 */
-.hover-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.image-container:hover .hover-overlay {
-  opacity: 1;
-}
-
-.detail-button {
-  color: white;
-  background-color: rgba(255, 255, 255, 0.2);
-  padding: 8px 16px;
-  border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.detail-button:hover {
-  background-color: rgba(255, 255, 255, 0.3);
-  transform: scale(1.05);
-}
-
-.fade-in-card {
-  animation: fadeIn 0.8s ease-in-out;
-  opacity: 0;
-  animation-fill-mode: forwards;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 为每个卡片添加延迟，创造错落有致的效果 */
-.fade-in-card:nth-child(1) { animation-delay: 0.1s; }
-.fade-in-card:nth-child(2) { animation-delay: 0.2s; }
-.fade-in-card:nth-child(3) { animation-delay: 0.3s; }
-.fade-in-card:nth-child(4) { animation-delay: 0.4s; }
-.fade-in-card:nth-child(5) { animation-delay: 0.5s; }
-.fade-in-card:nth-child(6) { animation-delay: 0.6s; }
 /* 加载更多样式 */
 .load-more-container {
   text-align: center;

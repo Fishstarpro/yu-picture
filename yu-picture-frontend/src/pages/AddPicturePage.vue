@@ -3,6 +3,9 @@
     <h2 style="margin-bottom: 16px">
       {{ route.query?.id ? '修改图片' : '创建图片' }}
     </h2>
+    <a-typography-paragraph v-if="spaceId" type="secondary">
+      保存至空间：<a :href="`/space/${spaceId}`" target="_blank">{{ spaceId }}</a>
+    </a-typography-paragraph>
     <!-- 上传方式切换 -->
     <div v-if="!route.query?.id">
       <a-radio-group v-model:value="uploadType" style="margin-bottom: 16px">
@@ -10,15 +13,19 @@
         <a-radio value="url">URL上传</a-radio>
       </a-radio-group>
       <!-- 图片上传组件 -->
-      <PictureUpload v-if="uploadType === 'local'" :picture="picture" :onSuccess="onSuccess" />
-      <UrlPictureUpload v-else :picture="picture" :onSuccess="onSuccess" />
+      <PictureUpload v-if="uploadType === 'local'" :spaceId=spaceId :picture="picture" :onSuccess="onSuccess" />
+      <UrlPictureUpload v-else :picture="picture" :spaceId=spaceId :onSuccess="onSuccess" />
     </div>
-    
+
     <!-- 修改图片时显示当前图片预览 -->
-    <div v-if="route.query?.id && picture?.url" class="preview-container" style="margin-bottom: 16px">
+    <div
+      v-if="route.query?.id && picture?.url"
+      class="preview-container"
+      style="margin-bottom: 16px"
+    >
       <img v-lazy="picture.url" alt="当前图片" />
     </div>
-    
+
     <!-- 图片信息表单 -->
     <a-form
       v-if="picture"
@@ -69,7 +76,7 @@
 <script setup lang="ts">
 import PictureUpload from '@/components/PictureUpload.vue'
 import UrlPictureUpload from '@/components/UrlPictureUpload.vue'
-import { onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { message } from 'ant-design-vue'
 import {
   editPictureUsingPost,
@@ -83,13 +90,19 @@ const pictureForm = reactive<API.PictureEditRequest>({})
 
 const uploadType = ref<'local' | 'url'>('local')
 
+const router = useRouter()
+const route = useRoute()
+
+//空间id
+const spaceId = computed(() => route.query?.spaceId)
+
 // 监听上传方式变化，仅在新建图片时生效
 watch(uploadType, () => {
   // 如果是修改图片（id存在），则不清空图片和表单
   if (route.query?.id) {
     return
   }
-  
+
   // 新建图片时，清空已上传的图片和表单
   picture.value = undefined
   pictureForm.name = ''
@@ -107,8 +120,6 @@ const onSuccess = (newPicture: API.PictureVO) => {
   pictureForm.name = newPicture.name
 }
 
-const router = useRouter()
-
 /**
  * 提交表单
  * @param values
@@ -122,6 +133,7 @@ const handleSubmit = async (values: any) => {
 
   const params = {
     id: pictureId,
+    spaceId: spaceId.value,
     ...values,
   }
   const res = await editPictureUsingPost(params)
@@ -164,12 +176,9 @@ const getTagCategoryOptions = async () => {
   }
 }
 
-
 onMounted(() => {
   getTagCategoryOptions()
 })
-
-const route = useRoute()
 
 // 获取老数据
 const getOldPicture = async () => {

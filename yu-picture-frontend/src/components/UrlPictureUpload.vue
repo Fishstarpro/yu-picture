@@ -26,11 +26,11 @@ import { uploadPictureUsingPost } from '@/api/pictureController.ts'
 
 interface Props {
   picture?: API.PictureVO
+  spaceId?: number
   onSuccess?: (newPicture: API.PictureVO) => void
 }
 
 const props = defineProps<Props>()
-const loading = ref<boolean>(false)
 const url = ref<string>('')
 
 /**
@@ -42,11 +42,13 @@ const handleUrlUpload = async () => {
     return
   }
 
-  loading.value = true
   try {
-    const params = props.picture ? { id: props.picture.id } : {}
+    const params: API.PictureUploadRequest = props.picture ? { id: props.picture.id } : {}
+
+    params.spaceId = props.spaceId
+
     const res = await uploadPictureUsingPost(params, { url: url.value })
-    
+
     if (res.data.code === 0 && res.data.data) {
       message.success('图片上传成功')
       props.onSuccess?.(res.data.data)
@@ -56,8 +58,6 @@ const handleUrlUpload = async () => {
   } catch (error: any) {
     console.error('图片上传失败', error)
     message.error('图片上传失败，' + error.message)
-  } finally {
-    loading.value = false
   }
 }
 </script>
@@ -109,4 +109,3 @@ const handleUrlUpload = async () => {
   color: #666;
 }
 </style>
-  

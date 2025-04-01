@@ -24,6 +24,7 @@ import { uploadPictureUsingPost } from '@/api/pictureController.ts'
 
 interface Props {
   picture?: API.PictureVO
+  spaceId?: number
   onSuccess?: (newPicture: API.PictureVO) => void
 }
 
@@ -39,7 +40,9 @@ const handleUpload = async ({ file }: any) => {
 
   try {
     //获取参数
-    const params = props.picture ? { id: props.picture.id } : {}
+    const params: API.PictureUploadRequest = props.picture ? { id: props.picture.id } : {}
+
+    params.spaceId = props.spaceId
     //像后端发送请求返回结果
     const res = await uploadPictureUsingPost(params, {}, file)
     //将结果传递给父组件

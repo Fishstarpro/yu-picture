@@ -54,13 +54,13 @@
     >
       <template #bodyCell="{ column, record }">
         <template v-if="column.dataIndex === 'url'">
-          <a-image 
-            :src="record.url" 
-            :width="100" 
+          <a-image
+            :src="record.url"
+            :width="100"
             :preview="{
               src: record.url,
               mask: '点击预览'
-            }" 
+            }"
           />
         </template>
 
@@ -181,6 +181,11 @@ const columns = [
   {
     title: '用户 id',
     dataIndex: 'userId',
+    width: 80,
+  },
+  {
+    title: '空间 id',
+    dataIndex: 'spaceId',
     width: 80,
   },
   {
