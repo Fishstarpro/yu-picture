@@ -59,7 +59,7 @@
             :width="100"
             :preview="{
               src: record.url,
-              mask: '点击预览'
+              mask: '点击预览',
             }"
           />
         </template>
@@ -147,6 +147,7 @@ import {
   PIC_REVIEW_STATUS_MAP,
   PIC_REVIEW_STATUS_OPTIONS,
 } from '../../constants/picture.ts'
+
 const columns = [
   {
     title: 'id',

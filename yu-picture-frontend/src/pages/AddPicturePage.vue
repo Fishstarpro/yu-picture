@@ -13,8 +13,13 @@
         <a-radio value="url">URL上传</a-radio>
       </a-radio-group>
       <!-- 图片上传组件 -->
-      <PictureUpload v-if="uploadType === 'local'" :spaceId=spaceId :picture="picture" :onSuccess="onSuccess" />
-      <UrlPictureUpload v-else :picture="picture" :spaceId=spaceId :onSuccess="onSuccess" />
+      <PictureUpload
+        v-if="uploadType === 'local'"
+        :spaceId="spaceId"
+        :picture="picture"
+        :onSuccess="onSuccess"
+      />
+      <UrlPictureUpload v-else :picture="picture" :spaceId="spaceId" :onSuccess="onSuccess" />
     </div>
 
     <!-- 修改图片时显示当前图片预览 -->

@@ -28,17 +28,17 @@
         </a-checkable-tag>
       </a-space>
     </div>
+
     <!-- 图片列表 -->
-    <PIctureList :dataList="dataList" :loading="loading" :show-op="false" />
+    <PictureList :dataList="dataList" :loading="loading" />
+
     <!-- 加载更多提示 -->
     <div v-if="dataList.length > 0" class="load-more-container" ref="loadMoreTriggerRef">
       <div v-if="loading" class="loading-indicator">
         <a-spin />
         <span style="margin-left: 8px">加载中...</span>
       </div>
-      <div v-else-if="!hasMore" class="no-more-text">
-        没有更多图片了
-      </div>
+      <div v-else-if="!hasMore" class="no-more-text">没有更多图片了</div>
       <div v-else>
         <!-- 下滑加载更多提示 -->
         <div class="load-more-hint">
@@ -54,15 +54,13 @@
 </template>
 <script setup lang="ts">
 // 数据列表
-import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
+import { onMounted, onUnmounted, reactive, ref } from 'vue'
 import { message } from 'ant-design-vue'
-import { useRouter } from 'vue-router'
-import { EyeOutlined, DownOutlined } from '@ant-design/icons-vue'
 import {
   listPictureTagCategoryUsingGet,
   listPictureVoByPageUsingPost,
 } from '@/api/pictureController.ts'
-import PIctureList from '@/components/PIctureList.vue'
+import PictureList from '@/components/PictureList.vue'
 
 const dataList = ref<API.PictureVO[]>([])
 const total = ref(0)
@@ -71,7 +69,7 @@ const hasMore = ref(true)
 // 搜索条件
 const searchParams = reactive<API.PictureQueryRequest>({
   current: 1,
-  pageSize: 12,
+  pageSize: 10,
   sortField: 'createTime',
   sortOrder: 'descend',
 })
@@ -109,8 +107,9 @@ const fetchData = async () => {
     total.value = res.data.data.total ?? 0
 
     // 判断是否还有更多数据
-    const currentPageRecords = res.data.data.records ?? [];
-    hasMore.value = currentPageRecords.length === searchParams.pageSize && dataList.value.length < total.value;
+    const currentPageRecords = res.data.data.records ?? []
+    hasMore.value =
+      currentPageRecords.length === searchParams.pageSize && dataList.value.length < total.value
   } else {
     message.error('获取数据失败, ' + res.data.message)
   }
@@ -152,15 +151,6 @@ const doSearch = () => {
   fetchData()
 }
 
-const router = useRouter()
-
-// 点击图片跳转至图片详情页
-const doClickPicture = (picture: API.PictureVO) => {
-  router.push({
-    path: `/picture/${picture.id}`,
-  })
-}
-
 const categoryList = ref<string[]>([])
 const tagList = ref<string[]>([])
 const selectedCategory = ref<string>('all')
@@ -189,19 +179,22 @@ const initIntersectionObserver = () => {
   if (loadMoreObserver.value) return
 
   // 创建观察器实例
-  loadMoreObserver.value = new IntersectionObserver((entries) => {
-    // 如果底部元素进入视口，且不在加载中，且还有更多数据
-    if (entries[0].isIntersecting && !loading.value && hasMore.value) {
-      loadMore()
-    }
-  }, {
-    // 设置根元素为null，表示视口
-    root: null,
-    // 设置根元素的margin，提前触发
-    rootMargin: '0px 0px 200px 0px',
-    // 设置阈值，当目标元素0%可见时触发回调
-    threshold: 0
-  })
+  loadMoreObserver.value = new IntersectionObserver(
+    (entries) => {
+      // 如果底部元素进入视口，且不在加载中，且还有更多数据
+      if (entries[0].isIntersecting && !loading.value && hasMore.value) {
+        loadMore()
+      }
+    },
+    {
+      // 设置根元素为null，表示视口
+      root: null,
+      // 设置根元素的margin，提前触发
+      rootMargin: '0px 0px 200px 0px',
+      // 设置阈值，当目标元素0%可见时触发回调
+      threshold: 0,
+    },
+  )
 
   // 如果底部触发元素存在，开始观察
   if (loadMoreTriggerRef.value) {
@@ -264,7 +257,8 @@ onUnmounted(() => {
 }
 
 @keyframes tagBounce {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   40% {
@@ -274,6 +268,7 @@ onUnmounted(() => {
     transform: translateY(-3px);
   }
 }
+
 /* 加载更多样式 */
 .load-more-container {
   text-align: center;
@@ -288,8 +283,6 @@ onUnmounted(() => {
   align-items: center;
   color: #1890ff;
 }
-
-/* 移除了手动加载相关样式，只保留自动加载样式 */
 
 .no-more-text {
   color: #999;
@@ -320,7 +313,11 @@ onUnmounted(() => {
 }
 
 @keyframes bounce {
-  0%, 20%, 50%, 80%, 100% {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
     transform: translateY(0);
   }
   40% {

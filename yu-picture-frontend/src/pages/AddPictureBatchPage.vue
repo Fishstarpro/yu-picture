@@ -29,15 +29,10 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from 'vue'
+import { reactive, ref } from 'vue'
 import { message } from 'ant-design-vue'
-import {
-  editPictureUsingPost,
-  getPictureVoByIdUsingGet,
-  listPictureTagCategoryUsingGet,
-  uploadPictureByBatchUsingPost,
-} from '@/api/pictureController.ts'
-import { useRoute, useRouter } from 'vue-router'
+import { uploadPictureByBatchUsingPost } from '@/api/pictureController.ts'
+import { useRouter } from 'vue-router'
 
 //任务执行状态
 const loading = ref(false)

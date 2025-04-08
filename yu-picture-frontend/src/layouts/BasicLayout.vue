@@ -10,7 +10,7 @@
           <router-view />
         </a-layout-content>
       </a-layout>
-<!--      <a-layout-footer class="footer">
+      <!--      <a-layout-footer class="footer">
         <a href="http://gptapi.us" target="_blank"> chatgpt </a>
       </a-layout-footer>-->
     </a-layout>

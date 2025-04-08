@@ -44,11 +44,11 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { SmileOutlined, DownOutlined } from '@ant-design/icons-vue'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { deleteUserUsingPost, listUserVoByPageUsingPost } from '@/api/userController.ts'
 import { message } from 'ant-design-vue'
 import dayjs from 'dayjs'
+
 const columns = [
   {
     title: 'id',
@@ -152,7 +152,7 @@ const doDelete = async (id: string) => {
 
     fetchData()
   } else {
-    message.error("输出失败")
+    message.error('输出失败')
   }
   fetchData()
 }

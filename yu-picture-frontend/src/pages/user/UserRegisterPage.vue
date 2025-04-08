@@ -40,7 +40,7 @@
 </template>
 <script lang="ts" setup>
 import { reactive } from 'vue'
-import {userRegisterUsingPost } from '@/api/userController.ts'
+import { userRegisterUsingPost } from '@/api/userController.ts'
 import router from '@/router'
 import { message } from 'ant-design-vue'
 
@@ -51,7 +51,6 @@ const formState = reactive<API.UserRegisterRequest>({
   checkPassword: '',
 })
 const handleSubmit = async (values: any) => {
-
   // 向后端发送注册请求
   const res = await userRegisterUsingPost(values)
   // 注册成功,前端保存登陆状态
@@ -63,7 +62,7 @@ const handleSubmit = async (values: any) => {
       replace: true,
     })
   } else {
-    message.error("注册失败, " + res.data.message)
+    message.error('注册失败, ' + res.data.message)
   }
 }
 </script>

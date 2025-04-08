@@ -10,7 +10,12 @@
         </router-link>
       </a-col>
       <a-col flex="auto">
-        <a-menu v-model:selectedKeys="current" mode="horizontal" :items="items" @click="doMenuClick" />
+        <a-menu
+          v-model:selectedKeys="current"
+          mode="horizontal"
+          :items="items"
+          @click="doMenuClick"
+        />
       </a-col>
       <a-col flex="120px">
         <div class="user-login-status">
@@ -81,7 +86,7 @@ const originItems = ref<MenuProps['items']>([
     key: '/admin/spaceManage',
     label: '空间管理',
     title: 'SpaceManagePage',
-  }
+  },
 ])
 
 const router = useRouter()
@@ -124,7 +129,7 @@ const doLogout = async () => {
 
 // 根据权限过滤菜单项
 const filterItems = (menus = [] as MenuProps['items']) => {
-  return menus?.filter(menu => {
+  return menus?.filter((menu) => {
     if (menu?.key?.startsWith('/admin')) {
       const loginUser = loginUserStore.loginUser
       if (!loginUser || loginUser.userRole !== 'admin') {

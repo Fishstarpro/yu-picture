@@ -17,9 +17,9 @@
 </template>
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue'
+import { LoadingOutlined, PlusOutlined } from '@ant-design/icons-vue'
+import type { UploadProps } from 'ant-design-vue'
 import { message } from 'ant-design-vue'
-import type { UploadChangeParam, UploadProps } from 'ant-design-vue'
 import { uploadPictureUsingPost } from '@/api/pictureController.ts'
 
 interface Props {
@@ -69,11 +69,11 @@ const beforeUpload = (file: UploadProps['fileList'][number]) => {
   if (!isJpgOrPng) {
     message.error('不支持该格式的图片上传, 推荐jpg或png格式')
   }
-  const isLt4M = file.size / 1024 / 1024 < 4
-  if (!isLt4M) {
-    message.error('不能上传超过4M的图片')
+  const isLt10M = file.size / 1024 / 1024 < 10
+  if (!isLt10M) {
+    message.error('不能上传超过10M的图片')
   }
-  return isJpgOrPng && isLt4M
+  return isJpgOrPng && isLt10M
 }
 </script>
 <style scoped>

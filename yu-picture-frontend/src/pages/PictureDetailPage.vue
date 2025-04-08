@@ -3,13 +3,13 @@
     <a-row :gutter="[16, 16]">
       <!-- 图片预览 -->
       <a-col :sm="24" :md="15" :xl="17">
-        <a-card title="图片预览" class="preview-card" :bodyStyle="{ padding: '12px', textAlign: 'center' }">
+        <a-card
+          title="图片预览"
+          class="preview-card"
+          :bodyStyle="{ padding: '12px', textAlign: 'center' }"
+        >
           <div class="image-wrapper">
-            <a-image
-              :src="picture.url"
-              :preview="{ maskClassName: 'preview-mask' }"
-              :lazy="true"
-            />
+            <a-image :src="picture.url" :preview="{ maskClassName: 'preview-mask' }" :lazy="true" />
           </div>
         </a-card>
       </a-col>
@@ -20,19 +20,17 @@
             <a-descriptions-item label="作者">
               <a-space>
                 <a-avatar :size="28" :src="picture.user?.userAvatar" />
-                <div style="font-weight: 500; color: #333;">{{ picture.user?.userName }}</div>
+                <div style="font-weight: 500; color: #333">{{ picture.user?.userName }}</div>
               </a-space>
             </a-descriptions-item>
             <a-descriptions-item label="名称">{{ picture.name ?? '未命名' }}</a-descriptions-item>
-            <a-descriptions-item label="简介">{{ picture.introduction ?? '-' }}</a-descriptions-item>
+            <a-descriptions-item label="简介">{{
+              picture.introduction ?? '-'
+            }}</a-descriptions-item>
             <a-descriptions-item label="分类">{{ picture.category ?? '默认' }}</a-descriptions-item>
             <a-descriptions-item label="标签">
               <a-space size="8">
-                <a-tag
-                  v-for="tag in picture.tags"
-                  :key="tag"
-                  class="tag-item"
-                >
+                <a-tag v-for="tag in picture.tags" :key="tag" class="tag-item">
                   {{ tag }}
                 </a-tag>
               </a-space>
@@ -41,54 +39,74 @@
             <a-descriptions-item label="宽度">{{ picture.picWidth ?? '-' }}</a-descriptions-item>
             <a-descriptions-item label="高度">{{ picture.picHeight ?? '-' }}</a-descriptions-item>
             <a-descriptions-item label="宽高比">{{ picture.picScale ?? '-' }}</a-descriptions-item>
-            <a-descriptions-item label="大小">{{ formatSize(picture.picSize) }}</a-descriptions-item>
+            <a-descriptions-item label="大小">{{
+              formatSize(picture.picSize)
+            }}</a-descriptions-item>
+            <a-descriptions-item label="主色调">
+              {{ picture.picColor ?? '-' }}
+              <div
+                v-if="picture.picColor"
+                :style="{
+                  width: '16px',
+                  height: '16px',
+                  backgroundColor: toHexColor(picture.picColor),
+                }"
+              />
+            </a-descriptions-item>
           </a-descriptions>
           <a-space wrap>
-
             <!-- 图片操作 -->
-              <a-button
-                type="primary"
-                @click="doDownload"
-                class="action-btn"
-              >
-                <template #icon>
-                  <DownloadOutlined />
-                </template>
-                下载
-              </a-button>
-              <a-button
-                v-if="isAllow"
-                :icon="h(EditOutlined)"
-                type="link"
-                @click="doEdit"
-                class="action-btn"
-              >
-                编辑
-              </a-button>
-              <a-button
-                v-if="isAllow"
-                :icon="h(DeleteOutlined)"
-                danger
-                @click="doDelete"
-                class="action-btn"
-              >
-                删除
-              </a-button>
+            <a-button
+              :icon="h(DownloadOutlined)"
+              type="primary"
+              @click="doDownload"
+              class="action-btn"
+            >
+              下载
+            </a-button>
+            <a-button :icon="h(ShareAltOutlined)" type="primary" ghost @click="doShare">
+              分享
+            </a-button>
+            <a-button
+              v-if="isAllow"
+              :icon="h(EditOutlined)"
+              type="link"
+              @click="doEdit"
+              class="action-btn"
+            >
+              编辑
+            </a-button>
+            <a-button
+              v-if="isAllow"
+              :icon="h(DeleteOutlined)"
+              danger
+              @click="doDelete"
+              class="action-btn"
+            >
+              删除
+            </a-button>
           </a-space>
         </a-card>
       </a-col>
     </a-row>
+    <ShareModal ref="shareModalRef" :link="shareLink" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { deletePictureUsingPost, getPictureVoByIdUsingGet } from '@/api/pictureController.ts'
-import { DeleteOutlined, DownloadOutlined, EditOutlined } from '@ant-design/icons-vue'
+import {
+  DeleteOutlined,
+  DownloadOutlined,
+  EditOutlined,
+  ShareAltOutlined,
+} from '@ant-design/icons-vue'
 import { computed, h, onMounted, ref } from 'vue'
 import { message } from 'ant-design-vue'
-import { downloadImage, formatSize } from '../utils'
+import { downloadImage, formatSize, toHexColor } from '../utils'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import { useRouter } from 'vue-router'
+import ShareModal from '@/components/ShareModal.vue'
 
 interface Props {
   id: string | number
@@ -97,7 +115,7 @@ interface Props {
 const props = defineProps<Props>()
 const picture = ref<API.PictureVO>({})
 
-// 获取图片详情
+//获取图片详情
 const fetchPictureDetail = async () => {
   try {
     const res = await getPictureVoByIdUsingGet({
@@ -141,7 +159,7 @@ const isAllow = computed(() => {
 
 const router = useRouter()
 
-// 编辑
+//编辑图片
 const doEdit = () => {
   router.push({
     path: '/add_picture',
@@ -152,7 +170,7 @@ const doEdit = () => {
   })
 }
 
-// 删除数据
+//删除图片
 const doDelete = async () => {
   const id = picture.value.id
   if (!id) {
@@ -166,6 +184,18 @@ const doDelete = async () => {
   } else {
     message.error('删除失败')
   }
+}
+
+//分享图片
+const shareModalRef = ref()
+
+const shareLink = ref<string>('')
+
+const doShare = () => {
+  //1.修改shareLink值
+  shareLink.value = `${window.location.protocol}//${window.location.host}/picture/${picture.value.id}`
+  //2.调用子组件
+  shareModalRef.value.openModal()
 }
 </script>
 

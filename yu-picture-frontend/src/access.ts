@@ -2,8 +2,7 @@ import router from '@/router'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import { message } from 'ant-design-vue'
 
-let firstFetchLoginUser = true;
-
+let firstFetchLoginUser = true
 
 router.beforeEach(async (to, from, next) => {
   const loginUserStore = useLoginUserStore()
@@ -16,7 +15,7 @@ router.beforeEach(async (to, from, next) => {
 
     loginUser = loginUserStore.loginUser
 
-    firstFetchLoginUser = false;
+    firstFetchLoginUser = false
   }
 
   //可以自定义权限校验
@@ -24,12 +23,11 @@ router.beforeEach(async (to, from, next) => {
 
   if (toUrl.startsWith('/admin')) {
     if (!loginUser || loginUser.userRole !== 'admin') {
-      message.error("没有权限访问")
+      message.error('没有权限访问')
 
       next(`/user/login?redirect=${to.fullPath}`)
     }
   }
 
   next()
-
-});
+})
