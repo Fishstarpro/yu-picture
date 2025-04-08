@@ -1,11 +1,14 @@
 package com.yxc.yupicturebackend.controller;
 
+import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.yxc.yupicturebackend.annotation.AuthCheck;
+import com.yxc.yupicturebackend.api.imageSearch.ImageSearchApiFacade;
+import com.yxc.yupicturebackend.api.imageSearch.model.ImageSearchResult;
 import com.yxc.yupicturebackend.common.BaseResponse;
 import com.yxc.yupicturebackend.common.DeleteRequest;
 import com.yxc.yupicturebackend.common.ResultUtils;
@@ -299,6 +302,11 @@ public class PictureController {
         return ResultUtils.success(true);
     }
 
+    /**
+     * 获取标签分类列表
+     *
+     * @return
+     */
     @GetMapping("/tag_category")
     public BaseResponse<PictureTagCategory> listPictureTagCategory() {
         PictureTagCategory pictureTagCategory = new PictureTagCategory();
@@ -344,5 +352,61 @@ public class PictureController {
         int uploadCount = pictureService.uploadPictureByBatch(pictureUploadByBatchRequest, loginUser);
 
         return ResultUtils.success(uploadCount);
+    }
+
+    /**
+     * 以图搜图
+     *
+     * @param searchPictureByPictureRequest
+     * @return
+     */
+    @PostMapping("/search/picture")
+    public BaseResponse<List<ImageSearchResult>> searchPictureByPicture(@RequestBody SearchPictureByPictureRequest searchPictureByPictureRequest) {
+        //1.校验参数
+        if (searchPictureByPictureRequest == null || ObjUtil.isNull(searchPictureByPictureRequest.getPictureId())) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        //2.从数据库中获取图片url
+        Long pictureId = searchPictureByPictureRequest.getPictureId();
+
+        Picture picture = pictureService.getById(pictureId);
+
+        ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR);
+        //3.调用接口获取图片列表
+        List<ImageSearchResult> imageSearchResults = ImageSearchApiFacade.searchImage(picture.getThumbnailUrl());
+        //4.返回结果
+        return ResultUtils.success(imageSearchResults);
+    }
+
+    /**
+     * 按照颜色搜索
+     */
+    @PostMapping("/search/color")
+    public BaseResponse<List<PictureVO>> searchPictureByColor(@RequestBody SearchPictureByColorRequest searchPictureByColorRequest, HttpServletRequest request) {
+        ThrowUtils.throwIf(searchPictureByColorRequest == null, ErrorCode.PARAMS_ERROR);
+
+        String picColor = searchPictureByColorRequest.getPicColor();
+
+        Long spaceId = searchPictureByColorRequest.getSpaceId();
+
+        User loginUser = userService.getLoginUser(request);
+
+        List<PictureVO> pictureVOList = pictureService.searchPictureByColor(spaceId, picColor, loginUser);
+
+        return ResultUtils.success(pictureVOList);
+    }
+
+    /**
+     * 批量编辑图片
+     */
+    @PostMapping("/edit/batch")
+    public BaseResponse<Boolean> editPictureByBatch(@RequestBody PictureEditByBatchRequest pictureEditByBatchRequest, HttpServletRequest request) {
+        ThrowUtils.throwIf(pictureEditByBatchRequest == null, ErrorCode.PARAMS_ERROR);
+
+        User loginUser = userService.getLoginUser(request);
+
+        pictureService.editPictureByBatch(pictureEditByBatchRequest, loginUser);
+
+        return ResultUtils.success(true);
     }
 }

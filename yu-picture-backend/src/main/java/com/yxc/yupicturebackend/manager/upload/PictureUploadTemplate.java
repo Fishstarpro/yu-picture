@@ -72,6 +72,8 @@ public abstract class PictureUploadTemplate {
             //获取压缩后的文件
             List<CIObject> ciObjectList = putObjectResult.getCiUploadResult().getProcessResults().getObjectList();
 
+            ImageInfo imageInfo = putObjectResult.getCiUploadResult().getOriginalInfo().getImageInfo();
+
             if (CollUtil.isNotEmpty(ciObjectList)) {
                 CIObject compressedCiObject = ciObjectList.get(0);
 
@@ -81,9 +83,8 @@ public abstract class PictureUploadTemplate {
                     thumbnailCiObject = ciObjectList.get(1);
                 }
                 //封装图片返回信息
-                return getUploadPictureResult(originalFilename, compressedCiObject, thumbnailCiObject);
+                return getUploadPictureResult(imageInfo, originalFilename, compressedCiObject, thumbnailCiObject);
             }
-            ImageInfo imageInfo = putObjectResult.getCiUploadResult().getOriginalInfo().getImageInfo();
             //封装图片返回信息
             return getUploadPictureResult(imageInfo, originalFilename, file, uploadPath);
         } catch (IOException e) {
@@ -147,6 +148,7 @@ public abstract class PictureUploadTemplate {
         uploadPictureResult.setPicHeight(height);
         uploadPictureResult.setPicScale(picScale);
         uploadPictureResult.setPicFormat(format);
+        uploadPictureResult.setPicColor(imageInfo.getAve());
 
         return uploadPictureResult;
     }
@@ -154,12 +156,13 @@ public abstract class PictureUploadTemplate {
     /**
      * 封装图片返回信息
      *
+     * @param imageInfo
      * @param originalFilename
      * @param compressedCiObject
      * @param thumbnailCiObject
      * @return
      */
-    private UploadPictureResult getUploadPictureResult(String originalFilename, CIObject compressedCiObject, CIObject thumbnailCiObject) {
+    private UploadPictureResult getUploadPictureResult(ImageInfo imageInfo, String originalFilename, CIObject compressedCiObject, CIObject thumbnailCiObject) {
         String format = compressedCiObject.getFormat();
         int width = compressedCiObject.getWidth();
         int height = compressedCiObject.getHeight();
@@ -175,6 +178,7 @@ public abstract class PictureUploadTemplate {
         uploadPictureResult.setPicHeight(height);
         uploadPictureResult.setPicScale(picScale);
         uploadPictureResult.setPicFormat(format);
+        uploadPictureResult.setPicColor(imageInfo.getAve());
 
         return uploadPictureResult;
     }
