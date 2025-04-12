@@ -8,6 +8,9 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.yxc.yupicturebackend.api.aliyunai.AliYunAiApi;
+import com.yxc.yupicturebackend.api.aliyunai.model.CreateOutPaintingTaskRequest;
+import com.yxc.yupicturebackend.api.aliyunai.model.CreateOutPaintingTaskResponse;
 import com.yxc.yupicturebackend.exception.BusinessException;
 import com.yxc.yupicturebackend.exception.ErrorCode;
 import com.yxc.yupicturebackend.exception.ThrowUtils;
@@ -31,7 +34,6 @@ import com.yxc.yupicturebackend.service.UserService;
 import com.yxc.yupicturebackend.utils.ColorSimilarUtils;
 import com.yxc.yupicturebackend.utils.ColorTransformUtils;
 import lombok.extern.slf4j.Slf4j;
-import net.bytebuddy.implementation.bytecode.Throw;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -46,8 +48,8 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
 import java.io.IOException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -80,6 +82,9 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
 
     @Resource
     private TransactionTemplate transactionTemplate;
+
+    @Resource
+    private AliYunAiApi aliYunAiApi;
 
     /**
      * 校验图片参数
@@ -706,6 +711,32 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         boolean result = this.updateBatchById(pictureList);
 
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR, "批量编辑失败");
+    }
+
+    @Override
+    public CreateOutPaintingTaskResponse createPictureOutPaintingTask(CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest, User loginUser) {
+        //1.获取和校验参数
+        Long pictureId = createPictureOutPaintingTaskRequest.getPictureId();
+
+        Picture picture = this.getById(pictureId);
+
+        ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR, "图片不存在");
+        //2.校验权限
+        this.checkPictureAuth(loginUser, picture);
+        //3.创建扩图任务
+        CreateOutPaintingTaskRequest createOutPaintingTaskRequest = new CreateOutPaintingTaskRequest();
+
+        CreateOutPaintingTaskRequest.Input input = new CreateOutPaintingTaskRequest.Input();
+
+        input.setImageUrl(picture.getUrl());
+
+        createOutPaintingTaskRequest.setInput(input);
+
+        createOutPaintingTaskRequest.setParameters(createPictureOutPaintingTaskRequest.getParameters());
+
+        CreateOutPaintingTaskResponse createOutPaintingTaskResponse = aliYunAiApi.createOutPaintingTask(createOutPaintingTaskRequest);
+        //4.返回结果
+        return createOutPaintingTaskResponse;
     }
 
     private void fillPictureWithNameRule(List<Picture> pictureList, String nameRule) {
