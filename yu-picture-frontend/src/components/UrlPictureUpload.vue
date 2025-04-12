@@ -22,7 +22,7 @@
 import { ref } from 'vue'
 import { PictureOutlined } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
-import { uploadPictureUsingPost } from '@/api/pictureController.ts'
+import { uploadPictureByUrlUsingPost } from '@/api/pictureController.ts'
 
 interface Props {
   picture?: API.PictureVO
@@ -43,11 +43,15 @@ const handleUrlUpload = async () => {
   }
 
   try {
-    const params: API.PictureUploadRequest = props.picture ? { id: props.picture.id } : {}
+    const params: API.PictureUploadRequest = { fileUrl: url.value }
 
     params.spaceId = props.spaceId
 
-    const res = await uploadPictureUsingPost(params, { url: url.value })
+    if (props.picture) {
+      params.id = props.picture.id
+    }
+
+    const res = await uploadPictureByUrlUsingPost(params)
 
     if (res.data.code === 0 && res.data.data) {
       message.success('图片上传成功')

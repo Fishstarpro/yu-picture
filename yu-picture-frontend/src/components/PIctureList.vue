@@ -15,11 +15,11 @@
                 <img
                   :alt="picture.name"
                   v-lazy="picture.thumbnailUrl || picture.url"
-                  style="height: 220px; width: 100%; object-fit: fill"
+                  style="height: 250px; width: 100%; object-fit: fill"
                   :preview="{ maskClassName: 'preview-mask' }"
                   :lazy="true"
                 />
-<!--                <div class="author-info">
+                <!--                <div class="author-info">
                   <span>{{ picture.user?.userName || '未知作者' }}</span>
                 </div>-->
                 <!-- 悬停效果覆盖层 -->
@@ -29,7 +29,7 @@
                   </div>
                 </div>
               </div>
-            </template>     
+            </template>
             <a-card-meta :title="picture.name">
               <template #description>
                 <a-flex>
@@ -65,14 +65,19 @@
         </a-list-item>
       </template>
     </a-list>
-    <ShareModal ref="shareModalRef" :link="shareLink"/>
+    <ShareModal ref="shareModalRef" :link="shareLink" />
   </div>
 </template>
 <script setup lang="ts">
-import { DeleteOutlined, EditOutlined, SearchOutlined, ShareAltOutlined } from '@ant-design/icons-vue'
+import {
+  DeleteOutlined,
+  EditOutlined,
+  SearchOutlined,
+  ShareAltOutlined,
+} from '@ant-design/icons-vue'
 import { useRouter } from 'vue-router'
 import { deletePictureUsingPost } from '@/api/pictureController.ts'
-import { message } from 'ant-design-vue'
+import { message, Modal } from 'ant-design-vue'
 import ShareModal from '@/components/ShareModal.vue'
 import { ref } from 'vue'
 
@@ -105,20 +110,28 @@ const doEdit = (picture, e) => {
 }
 
 // 删除数据
-const doDelete = async (picture, e) => {
+const doDelete = (picture, e) => {
   // 阻止冒泡
   e.stopPropagation()
   const id = picture.id
   if (!id) {
     return
   }
-  const res = await deletePictureUsingPost({ id })
-  if (res.data.code === 0) {
-    message.success('删除成功')
-    props.onReload?.()
-  } else {
-    message.error('删除失败')
-  }
+
+  // 添加确认弹窗
+  Modal.confirm({
+    title: '确认删除',
+    content: `确定要删除图片 ${picture.name}？`,
+    async onOk() {
+      const res = await deletePictureUsingPost({ id })
+      if (res.data.code === 0) {
+        message.success('删除成功')
+        props.onReload?.()
+      } else {
+        message.error('删除失败')
+      }
+    },
+  })
 }
 
 // 点击图片跳转至图片详情页
@@ -155,7 +168,7 @@ const doShare = (picture, e) => {
 .image-container {
   position: relative;
   overflow: hidden;
-  height: 220px;
+  height: 250px;
   width: 100%;
   border-radius: 8px;
   background-color: #f0f0f0;

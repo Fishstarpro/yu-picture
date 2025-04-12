@@ -12,12 +12,11 @@
   </div>
 </template>
 <script setup lang="ts">
-
 import { ref } from 'vue'
 
 interface Props {
-  title: string,
-  link: string,
+  title: string
+  link: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
