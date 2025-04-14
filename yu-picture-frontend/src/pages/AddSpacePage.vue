@@ -50,7 +50,7 @@ import { SPACE_LEVEL_OPTIONS } from '@/constants/space.ts'
 import { formatSize } from '../utils'
 
 const space = ref<API.SpaceVO>()
-const spaceForm = reactive<API.SpaceAddRequest | API.SpaceEditRequest>({})
+const spaceForm = reactive<API.SpaceAddRequest | API.SpaceUpdateRequest>({})
 const loading = ref(false)
 
 const spaceLevelList = ref<API.SpaceLevel[]>([])
@@ -85,6 +85,11 @@ const handleSubmit = async (values: any) => {
       id: spaceId,
       ...spaceForm,
     })
+    router.push({
+      path: `/space/${spaceId}`,
+    })
+
+    return
   } else {
     // 创建
     res = await addSpaceUsingPost({
