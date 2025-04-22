@@ -68,7 +68,7 @@
               分享
             </a-button>
             <a-button
-              v-if="isAllow"
+              v-if="canEdit"
               :icon="h(EditOutlined)"
               type="link"
               @click="doEdit"
@@ -77,7 +77,7 @@
               编辑
             </a-button>
             <a-button
-              v-if="isAllow"
+              v-if="canDelete"
               :icon="h(DeleteOutlined)"
               danger
               @click="doDelete"
@@ -107,6 +107,7 @@ import { downloadImage, formatSize, toHexColor } from '../utils'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import { useRouter } from 'vue-router'
 import ShareModal from '@/components/ShareModal.vue'
+import { SPACE_PERMISSION_ENUM } from '@/constants/space.ts'
 
 interface Props {
   id: string | number
@@ -197,6 +198,17 @@ const doShare = () => {
   //2.调用子组件
   shareModalRef.value.openModal()
 }
+
+// 通用权限检查函数
+function createPermissionChecker(permission: string) {
+  return computed(() => {
+    return (picture.value.permissionList ?? []).includes(permission)
+  })
+}
+
+// 定义权限检查
+const canEdit = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_EDIT)
+const canDelete = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_DELETE)
 </script>
 
 <style scoped>
