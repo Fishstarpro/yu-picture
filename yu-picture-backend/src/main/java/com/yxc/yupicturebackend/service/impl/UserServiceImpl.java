@@ -11,6 +11,7 @@ import com.yxc.yupicturebackend.constant.UserConstant;
 import com.yxc.yupicturebackend.exception.BusinessException;
 import com.yxc.yupicturebackend.exception.ErrorCode;
 import com.yxc.yupicturebackend.exception.ThrowUtils;
+import com.yxc.yupicturebackend.manager.auth.StpKit;
 import com.yxc.yupicturebackend.mapper.UserMapper;
 import com.yxc.yupicturebackend.model.dto.user.UserQueryRequest;
 import com.yxc.yupicturebackend.model.entity.User;
@@ -28,14 +29,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
-* @author fishstar
-* @description 针对表【user(用户)】的数据库操作Service实现
-* @createDate 2025-03-11 00:14:32
-*/
+ * @author fishstar
+ * @description 针对表【user(用户)】的数据库操作Service实现
+ * @createDate 2025-03-11 00:14:32
+ */
 @Service
 @Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
-    implements UserService{
+        implements UserService {
 
     /**
      * 用户注册
@@ -132,6 +133,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         //4.保存用户的登录态
         request.getSession().setAttribute(UserConstant.USER_LOGIN_STATE, user);
 
+        //记录用户登录态到 Sa-token，便于空间鉴权时使用，注意保证该用户信息与 SpringSession 中的信息过期时间一致
+        StpKit.SPACE.login(user.getId());
+        StpKit.SPACE.getSession().set(UserConstant.USER_LOGIN_STATE, user);
+
         return this.getLoginUesrVO(user);
     }
 
@@ -170,7 +175,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
         BeanUtil.copyProperties(user, userVO);
 
-        return userVO;    }
+        return userVO;
+    }
 
     /**
      * 获取脱敏的用户信息列表
@@ -196,7 +202,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public User getLoginUser(HttpServletRequest request) {
         //1.从session中获取用户信息
-        User user = (User)request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        User user = (User) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
         //2.判断是否为空
         if (user == null || user.getId() == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
@@ -224,7 +230,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
      */
     @Override
     public Boolean userLogout(HttpServletRequest request) {
-        User user = (User)request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        User user = (User) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
 
         if (user == null) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "未登录");
@@ -274,6 +280,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     /**
      * 是否为管理员
+     *
      * @param user
      * @return
      */

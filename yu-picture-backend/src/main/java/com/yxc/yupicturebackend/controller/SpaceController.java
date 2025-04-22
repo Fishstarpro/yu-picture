@@ -9,6 +9,7 @@ import com.yxc.yupicturebackend.constant.UserConstant;
 import com.yxc.yupicturebackend.exception.BusinessException;
 import com.yxc.yupicturebackend.exception.ErrorCode;
 import com.yxc.yupicturebackend.exception.ThrowUtils;
+import com.yxc.yupicturebackend.manager.auth.SpaceUserAuthManager;
 import com.yxc.yupicturebackend.model.dto.space.*;
 import com.yxc.yupicturebackend.model.entity.Space;
 import com.yxc.yupicturebackend.model.entity.User;
@@ -37,6 +38,9 @@ public class SpaceController {
 
     @Resource
     private SpaceService spaceService;
+
+    @Resource
+    private SpaceUserAuthManager spaceUserAuthManager;
 
     @PostMapping("/add")
     public BaseResponse<Long> addSpace(@RequestBody SpaceAddRequest spaceAddRequest, HttpServletRequest request) {
@@ -124,8 +128,16 @@ public class SpaceController {
         //1.查询数据库
         Space space = spaceService.getById(id);
         ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR);
-        //2.获取封装类
-        return ResultUtils.success(spaceService.getSpaceVO(space, request));
+        //2.获取当前用户的空间权限
+        SpaceVO spaceVO = spaceService.getSpaceVO(space, request);
+
+        User loginUser = userService.getLoginUser(request);
+
+        List<String> permissionList = spaceUserAuthManager.getPermissionList(space, loginUser);
+
+        spaceVO.setPermissionList(permissionList);
+        //3.返回结果
+        return ResultUtils.success(spaceVO);
     }
 
     /**
